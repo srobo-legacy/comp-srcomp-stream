@@ -38,8 +38,11 @@ server = (comp) ->
     response.writeHead 200, 'OK', mainHeaders
 
     sendEvent = (event) ->
-      response.write "event: " + event.event + "\n", 'utf-8'
-      response.write "data: " + JSON.stringify(event.data) + "\n\n", 'utf-8'
+      try
+        response.write "event: " + event.event + "\n", 'utf-8'
+        response.write "data: " + JSON.stringify(event.data) + "\n\n", 'utf-8'
+      catch error
+        do stopListening
 
     stopListening = comp.events.onValue sendEvent
 

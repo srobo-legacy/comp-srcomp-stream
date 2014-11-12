@@ -8,6 +8,7 @@ _formatTeams = (teams) ->
   result = {}
   for team, data of teams
     result[team] =
+      tla: team
       name: data.name
       game_points: data.scores.game
       league_points: data.scores.league
@@ -61,7 +62,6 @@ class SRComp
   seedTeamRecords: ->
     for team, record of @teams
       event: 'team'
-      key: team
       data: record
 
   seedMatchRecord: ->
@@ -70,7 +70,6 @@ class SRComp
   txTeamRecord: (tla, record) ->
     @events.push
       event: 'team'
-      key: tla
       data: record
 
   reloadTeams: ->

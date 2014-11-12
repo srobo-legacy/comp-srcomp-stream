@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/prophile/srcomp-stream",
   "dependencies": {
-    "coffee-script": "^1.8.0"
+    "coffee-script": "^1.8.0",
+    "request": "^2.47.0"
   }
 }

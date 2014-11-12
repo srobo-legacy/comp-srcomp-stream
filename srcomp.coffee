@@ -27,7 +27,7 @@ _formatMatches = (matches) ->
       game:
         start: moment(match.start_time).add(configuration.MATCH_START_OFFSET,
                                             's')
-        end: moment(match.end_time).add(configuration.MATCH_START_OFFSET + 180,
+        end: moment(match.start_time).add(configuration.MATCH_START_OFFSET + 180,
                                         's')
 
 _calculateCurrentMatch = (matches) ->

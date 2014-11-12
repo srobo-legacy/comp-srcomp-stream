@@ -27,17 +27,16 @@ _formatMatches = (matches) ->
 
 _calculateCurrentMatch = (matches) ->
   now = moment()
-  for match in matches
-    if match.start.isBefore(now) and match.end.isAfter(now)
-      return match
-  return null
+  active = (match) ->
+    match.start.isBefore(now) and match.end.isAfter(now)
+  match for match in matches when active(match)
 
 class SRComp
   constructor: (@base) ->
     @events = new Bacon.Bus()
     @teams = {}
     @matches = []
-    @currentMatch = null
+    @currentMatch = []
     setInterval (=> do @queryState), 10000
     setInterval (=> do @updateCurrentMatch), 2000
     do @queryState

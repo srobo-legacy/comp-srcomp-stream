@@ -1,4 +1,7 @@
 configuration = require "./config"
+srcomp = require "./srcomp"
 
-console.log configuration
+comp = new srcomp.SRComp configuration.SRCOMP
+
+console.log comp
 

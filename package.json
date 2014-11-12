@@ -2,7 +2,7 @@
   "name": "srcomp-stream",
   "version": "1.0.0",
   "description": "srcomp live events stream server",
-  "main": "stream.js",
+  "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/prophile/srcomp-stream/issues"
   },
-  "homepage": "https://github.com/prophile/srcomp-stream"
+  "homepage": "https://github.com/prophile/srcomp-stream",
+  "dependencies": {
+    "coffee-script": "^1.8.0"
+  }
 }

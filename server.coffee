@@ -1,2 +1,4 @@
-console.log "Hello, world!"
+configuration = require "./config"
+
+console.log configuration
 

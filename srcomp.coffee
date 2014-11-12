@@ -56,7 +56,7 @@ class SRComp
     do @reloadMatches
 
   seedRecords: ->
-    @seedTeamRecords().append(@seedMatchRecord())
+    @seedTeamRecords().concat(@seedMatchRecord())
 
   seedTeamRecords: ->
     for team, record of @teams

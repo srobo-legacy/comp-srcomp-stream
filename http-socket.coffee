@@ -4,14 +4,31 @@ server = (comp) ->
   http.createServer (request, response) ->
     valid = true
     valid = false if request.url isnt '/'
-    valid = false if request.method isnt 'GET'
 
     if not valid
       response.writeHead 404, 'Not Found', 'Content-Type': 'text/plain'
       response.end "Not a thing.\n", 'utf-8'
       return
 
-    response.writeHead 200, 'OK', 'Content-Type': 'text/event-stream'
+    allowHeaders = {'Content-Type': 'text/plain', 'Allow': 'GET, HEAD, OPTIONS'}
+    mainHeaders = {'Content-Type': 'text/event-stream'}
+
+    if request.method is 'OPTIONS'
+      response.writeHead 200, 'OK', allowHeaders
+      response.end '', 'utf-8'
+      return
+
+    if request.method is 'HEAD'
+      response.writeHead 200, 'OK', mainHeaders
+      response.end '', 'utf-8'
+      return
+
+    if request.method isnt 'GET'
+      response.writeHead 405, 'Method Not Allowed', allowHeaders
+      response.end '', 'utf-8'
+      return
+
+    response.writeHead 200, 'OK', mainHeaders
 
     sendEvent = (event) ->
       response.write "event: " + event.event + "\n", 'utf-8'

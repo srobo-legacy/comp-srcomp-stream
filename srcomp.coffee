@@ -20,15 +20,20 @@ _formatMatches = (matches) ->
     num: match.num
     type: match.type
     teams: match.teams
-    start: moment(match.start_time)
-    end: moment(match.end_time)
-    begin: moment(match.start_time).add(configuration.MATCH_START_OFFSET,
+    times:
+      period:
+        start: moment(match.start_time)
+        end: moment(match.end_time)
+      game:
+        start: moment(match.start_time).add(configuration.MATCH_START_OFFSET,
+                                            's')
+        end: moment(match.end_time).add(configuration.MATCH_START_OFFSET + 180,
                                         's')
 
 _calculateCurrentMatch = (matches) ->
   now = moment()
   active = (match) ->
-    match.start.isBefore(now) and match.end.isAfter(now)
+    match.times.period.start.isBefore(now) and match.times.period.end.isAfter(now)
   match for match in matches when active(match)
 
 class SRComp

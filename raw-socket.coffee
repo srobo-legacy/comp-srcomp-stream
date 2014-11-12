@@ -3,7 +3,10 @@ net = require 'net'
 server = (comp) ->
   net.createServer (socket) ->
     sendEvent = (event) ->
-      socket.write JSON.stringify(event) + "\n"
+      try
+        socket.write JSON.stringify(event) + "\n"
+      catch error
+        do stopListening
 
     stopListening = comp.events.onValue sendEvent
 

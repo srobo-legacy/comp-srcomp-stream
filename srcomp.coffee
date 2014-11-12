@@ -1,8 +1,9 @@
 rq = require 'request'
 _ = require 'underscore'
 moment = require 'moment'
+Bacon = require 'baconjs'
 
-_format_teams = (teams) ->
+_formatTeams = (teams) ->
   result = {}
   for team, data of teams
     result[team] =
@@ -11,7 +12,7 @@ _format_teams = (teams) ->
       league_points: data.scores.league
   return result
 
-_format_matches = (matches) ->
+_formatMatches = (matches) ->
   for match in matches
     arena: match.arena
     num: match.num
@@ -29,6 +30,7 @@ _calculateCurrentMatch = (matches) ->
 
 class SRComp
   constructor: (@base) ->
+    @events = new Bacon.Bus()
     @teams = {}
     @matches = []
     @currentMatch = null
@@ -43,7 +45,6 @@ class SRComp
       newState = JSON.parse(body)['state']
       if newState isnt @savedState
         @savedState = newState
-        console.log "Bump: #{newState}"
         do @reloadData
 
   reloadData: ->
@@ -51,14 +52,29 @@ class SRComp
     do @reloadTeams
     do @reloadMatches
 
+  seedRecords: ->
+    @seedTeamRecords() + @seedMatchRecord()
+
+  seedTeamRecords: ->
+    for team, record of @teams
+      event: 'team'
+      key: team
+      data: record
+
+  seedMatchRecord: ->
+    [{event: 'match', data: @currentMatch}]
+
   txTeamRecord: (tla, record) ->
-    console.log tla, record
+    @events.push
+      event: 'team'
+      key: tla
+      data: record
 
   reloadTeams: ->
     rq "#{@base}/teams", (error, response, body) =>
       return if error
       return unless response.statusCode is 200
-      newTeams = _format_teams(JSON.parse(body)['teams'])
+      newTeams = _formatTeams(JSON.parse(body)['teams'])
       if not _.isEqual(@teams, newTeams)
         # Diffs 1: deleted teams
         for key of _.difference(_.keys(@teams), _.keys(newTeams))
@@ -73,7 +89,7 @@ class SRComp
     rq "#{@base}/matches", (error, response, body) =>
       return if error
       return unless response.statusCode is 200
-      newMatches = _format_matches(JSON.parse(body)['matches'])
+      newMatches = _formatMatches(JSON.parse(body)['matches'])
       if not _.isEqual(@matches, newMatches)
         @matches = newMatches
         do @updateCurrentMatch
@@ -82,7 +98,9 @@ class SRComp
     newCurrent = _calculateCurrentMatch(@matches)
     if not _.isEqual(newCurrent, @currentMatch)
       @currentMatch = newCurrent
-      console.log newCurrent
+      @events.push
+        event: 'match'
+        data: @currentMatch
 
 module.exports =
   SRComp: SRComp

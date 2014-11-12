@@ -9,5 +9,5 @@ comp = new srcomp.SRComp configuration.SRCOMP
 comp.events.onValue (event) ->
   console.log event
 
-raw(comp).listen(5000)
+raw(comp).listen(configuration.SOCKET_PORT, '::')
 

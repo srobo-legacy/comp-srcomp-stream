@@ -10,8 +10,15 @@ server = (comp) ->
       response.end "Not a thing.\n", 'utf-8'
       return
 
-    allowHeaders = {'Content-Type': 'text/plain', 'Allow': 'GET, HEAD, OPTIONS'}
-    mainHeaders = {'Content-Type': 'text/event-stream'}
+    allowHeaders = {
+      'Content-Type': 'text/plain',
+      'Allow': 'GET, HEAD, OPTIONS',
+      'Access-Control-Allow-Origin': '*'
+    }
+    mainHeaders = {
+      'Content-Type': 'text/event-stream',
+      'Access-Control-Allow-Origin': '*'
+    }
 
     if request.method is 'OPTIONS'
       response.writeHead 200, 'OK', allowHeaders

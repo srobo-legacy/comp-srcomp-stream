@@ -2,6 +2,7 @@ rq = require 'request'
 _ = require 'underscore'
 moment = require 'moment'
 Bacon = require 'baconjs'
+configuration = require './config'
 
 _formatTeams = (teams) ->
   result = {}
@@ -20,6 +21,8 @@ _formatMatches = (matches) ->
     teams: match.teams
     start: moment(match.start_time)
     end: moment(match.end_time)
+    begin: moment(match.start_time).add(configuration.MATCH_START_OFFSET,
+                                        's')
 
 _calculateCurrentMatch = (matches) ->
   now = moment()

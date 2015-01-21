@@ -1,6 +1,4 @@
 module.exports =
   SRCOMP: "https://www.studentrobotics.org/comp-api"
-  MATCH_START_OFFSET: 90
-  MATCH_LENGTH: 180
   WEB_PORT: 5001
 

@@ -14,7 +14,7 @@ _formatTeams = (teams) ->
       league_points: data.scores.league
   return result
 
-_formatMatches = (matches) ->
+_formatMatches = (matches, lengths) ->
   for match in matches
     arena: match.arena
     num: match.num
@@ -25,10 +25,10 @@ _formatMatches = (matches) ->
         start: moment(match.start_time)
         end: moment(match.end_time)
       game:
-        start: moment(match.start_time).add(configuration.MATCH_START_OFFSET,
+        start: moment(match.start_time).add(lengths['pre'],
                                             's')
-        end: moment(match.start_time).add(configuration.MATCH_START_OFFSET + 
-                                          configuration.MATCH_LENGTH,
+        end: moment(match.start_time).add(lengths['pre'] +
+                                          lengths['match'],
                                         's')
 
 _calculateCurrentMatch = (matches) ->
@@ -43,9 +43,17 @@ class SRComp
     @teams = {}
     @matches = []
     @currentMatch = []
-    setInterval (=> do @queryState), 10000
-    setInterval (=> do @updateCurrentMatch), 2000
-    do @queryState
+    do @queryConfig
+
+  queryConfig: ->
+    rq "#{@base}/config", (error, response, body) =>
+      return if error
+      return unless response.statusCode is 200
+      @config = JSON.parse(body)['config']
+      console.log @config
+      do @queryState
+      setInterval (=> do @queryState), 10000
+      setInterval (=> do @updateCurrentMatch), 2000
 
   queryState: ->
     rq "#{@base}/state", (error, response, body) =>
@@ -96,7 +104,7 @@ class SRComp
     rq "#{@base}/matches", (error, response, body) =>
       return if error
       return unless response.statusCode is 200
-      newMatches = _formatMatches(JSON.parse(body)['matches'])
+      newMatches = _formatMatches(JSON.parse(body)['matches'], @config['match_periods'])
       if not _.isEqual(@matches, newMatches)
         @matches = newMatches
         do @updateCurrentMatch

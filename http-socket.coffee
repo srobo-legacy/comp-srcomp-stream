@@ -1,7 +1,7 @@
 http = require 'http'
 
 server = (comp) ->
-  http.createServer (request, response) ->
+  svr = http.createServer (request, response) ->
     valid = true
     valid = false if request.url isnt '/'
 
@@ -51,6 +51,9 @@ server = (comp) ->
 
     response.on 'end', ->
       do stopListening
+  # Time out after 25 minutes
+  svr.timeout = 25 * 60 * 1000
+  svr
 
 module.exports = server
 

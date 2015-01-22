@@ -14,27 +14,12 @@ _formatTeams = (teams) ->
       league_points: data.scores.league
   return result
 
-_formatMatches = (matches, lengths) ->
-  for match in matches
-    arena: match.arena
-    num: match.num
-    type: match.type
-    teams: match.teams
-    times:
-      period:
-        start: moment(match.start_time)
-        end: moment(match.end_time)
-      game:
-        start: moment(match.start_time).add(lengths['pre'],
-                                            's')
-        end: moment(match.start_time).add(lengths['pre'] +
-                                          lengths['match'],
-                                        's')
-
 _calculateCurrentMatch = (matches) ->
   now = moment()
   active = (match) ->
-    match.times.period.start.isBefore(now) and match.times.period.end.isAfter(now)
+    start = moment(match.times.period.start)
+    end = moment(match.times.period.end)
+    start.isBefore(now) and end.isAfter(now)
   match for match in matches when active(match)
 
 class SRComp
@@ -104,9 +89,9 @@ class SRComp
     rq "#{@base}/matches", (error, response, body) =>
       return if error
       return unless response.statusCode is 200
-      newMatches = _formatMatches(JSON.parse(body)['matches'], @config['match_periods'])
-      if not _.isEqual(@matches, newMatches)
-        @matches = newMatches
+      matches = JSON.parse(body)['matches']
+      if not _.isEqual(@matches, matches)
+        @matches = matches
         do @updateCurrentMatch
 
   updateCurrentMatch: ->
@@ -119,4 +104,3 @@ class SRComp
 
 module.exports =
   SRComp: SRComp
-

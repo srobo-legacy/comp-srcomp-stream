@@ -28,6 +28,7 @@ class SRComp
     @teams = {}
     @matches = []
     @currentMatch = []
+    @lastScoredMatch = null
     do @queryConfig
 
   queryConfig: ->
@@ -56,6 +57,7 @@ class SRComp
 
   seedRecords: ->
     @seedTeamRecords().concat(@seedMatchRecord())
+                      .concat(@seedScoredMatchRecord())
 
   seedTeamRecords: ->
     for team, record of @teams
@@ -64,6 +66,10 @@ class SRComp
 
   seedMatchRecord: ->
     [{event: 'match', data: @currentMatch}]
+
+  seedScoredMatchRecord: ->
+    return [] if not @lastScoredMatch?
+    [{event: 'scored-to', data: @lastScoredMatch}]
 
   txTeamRecord: (tla, record) ->
     @events.push
@@ -92,6 +98,7 @@ class SRComp
       matches = JSON.parse(body)['matches']
       if not _.isEqual(@matches, matches)
         @matches = matches
+        do @updateLastScored
         do @updateCurrentMatch
 
   updateCurrentMatch: ->
@@ -101,6 +108,17 @@ class SRComp
       @events.push
         event: 'match'
         data: @currentMatch
+
+  updateLastScored: ->
+    scoredUpTo = null
+    for match in @matches
+      break unless match.scores?
+      scoredUpTo = match['num']
+    if scoredUpTo isnt @lastScoredMatch
+      @lastScoredMatch = scoredUpTo
+      @events.push
+        event: 'scored-to'
+        data: @lastScoredMatch
 
 module.exports =
   SRComp: SRComp

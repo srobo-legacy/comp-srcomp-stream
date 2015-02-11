@@ -29,7 +29,7 @@ class SRComp
     @matches = []
     @currentMatch = []
     @lastScoredMatch = null
-    @knockouts = []
+    @koRounds = null
     do @queryConfig
 
   queryConfig: ->
@@ -55,6 +55,7 @@ class SRComp
     console.log "Reloading data"
     do @reloadTeams
     do @reloadMatches
+    do @reloadKnockouts
 
   seedRecords: ->
     @seedTeamRecords().concat(@seedMatchRecord())
@@ -74,7 +75,8 @@ class SRComp
     [{event: 'scored-to', data: @lastScoredMatch}]
 
   seedKnockoutsRecord: ->
-    [{event: 'knockouts', data: @knockouts}]
+    return [] if not @koRounds?
+    [{event: 'knockouts', data: @koRounds}]
 
   txTeamRecord: (tla, record) ->
     @events.push
@@ -105,7 +107,6 @@ class SRComp
         @matches = matches
         do @updateLastScored
         do @updateCurrentMatch
-        do @updateKnockouts
 
   updateCurrentMatch: ->
     newCurrent = _calculateCurrentMatch(@matches)
@@ -126,13 +127,16 @@ class SRComp
         event: 'scored-to'
         data: @lastScoredMatch
 
-  updateKnockouts: ->
-    knockouts = (match for match in @matches when match.type is 'knockout')
-    if not _.isEqual(knockouts, @knockouts)
-      @knockouts = knockouts
-      @events.push
-        event: 'knockouts'
-        data: @knockouts
+  reloadKnockouts: ->
+    rq "#{@base}/knockout", (error, response, body) =>
+      return if error
+      return unless response.statusCode is 200
+      newKORounds = JSON.parse(body)['rounds']
+      if not _.isEqual(@koRounds, newKORounds)
+        @koRounds = newKORounds
+        @events.push
+          event: 'knockouts'
+          data: @koRounds
 
 module.exports =
   SRComp: SRComp

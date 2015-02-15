@@ -17,8 +17,8 @@ _formatTeams = (teams) ->
 _calculateCurrentMatch = (matches) ->
   now = moment()
   active = (match) ->
-    start = moment(match.times.period.start)
-    end = moment(match.times.period.end)
+    start = moment(match.times.slot.start)
+    end = moment(match.times.slot.end)
     start.isBefore(now) and end.isAfter(now)
   match for match in matches when active(match)
 

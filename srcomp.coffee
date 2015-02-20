@@ -12,6 +12,7 @@ _formatTeams = (teams) ->
       name: data.name
       game_points: data.scores.game
       league_points: data.scores.league
+      league_pos: data.league_pos
   return result
 
 _calculateCurrentMatch = (matches) ->

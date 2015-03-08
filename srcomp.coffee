@@ -18,7 +18,7 @@ class SRComp
     @teams = {}
     @matches = []
     @currentMatch = []
-    @lastScoredMatch = null
+    @lastScoredMatch = 0
     @koRounds = null
     do @queryConfig
 
@@ -45,6 +45,7 @@ class SRComp
     console.log "Reloading data"
     do @reloadTeams
     do @reloadMatches
+    do @reloadLastScoredMatch
     do @reloadKnockouts
 
   seedRecords: ->
@@ -95,8 +96,18 @@ class SRComp
       matches = JSON.parse(body)['matches']
       if not _.isEqual(@matches, matches)
         @matches = matches
-        do @updateLastScored
         do @updateCurrentMatch
+
+  reloadLastScoredMatch: ->
+    rq "#{@base}/matches/last_scored", (error, response, body) =>
+      return if error
+      return unless response.statusCode is 200
+      lastScoredMatch = JSON.parse(body)['last_scored']
+      if not _.isEqual(@lastScoredMatch, lastScoredMatch)
+        @lastScoredMatch = lastScoredMatch
+        @events.push
+          event: 'scored-to'
+          data: @lastScoredMatch
 
   updateCurrentMatch: ->
     newCurrent = _calculateCurrentMatch(@matches)
@@ -105,17 +116,6 @@ class SRComp
       @events.push
         event: 'match'
         data: @currentMatch
-
-  updateLastScored: ->
-    scoredUpTo = null
-    for match in @matches
-      break unless match.scores?
-      scoredUpTo = match['num']
-    if scoredUpTo isnt @lastScoredMatch
-      @lastScoredMatch = scoredUpTo
-      @events.push
-        event: 'scored-to'
-        data: @lastScoredMatch
 
   reloadKnockouts: ->
     rq "#{@base}/knockout", (error, response, body) =>

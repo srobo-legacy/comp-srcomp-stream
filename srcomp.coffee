@@ -18,7 +18,7 @@ class SRComp
     @teams = {}
     @matches = []
     @currentMatch = []
-    @lastScoredMatch = 0
+    @lastScoredMatch = null
     @koRounds = null
     do @queryConfig
 

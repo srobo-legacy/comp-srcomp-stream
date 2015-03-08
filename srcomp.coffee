@@ -63,7 +63,7 @@ class SRComp
 
   seedScoredMatchRecord: ->
     return [] if not @lastScoredMatch?
-    [{event: 'scored-to', data: @lastScoredMatch}]
+    [{event: 'last-scored-match', data: @lastScoredMatch}]
 
   seedKnockoutsRecord: ->
     return [] if not @koRounds?
@@ -106,7 +106,7 @@ class SRComp
       if not _.isEqual(@lastScoredMatch, lastScoredMatch)
         @lastScoredMatch = lastScoredMatch
         @events.push
-          event: 'scored-to'
+          event: 'last-scored-match'
           data: @lastScoredMatch
 
   updateCurrentMatch: ->

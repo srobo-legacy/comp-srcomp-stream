@@ -4,17 +4,6 @@ moment = require 'moment'
 Bacon = require 'baconjs'
 configuration = require './config'
 
-_formatTeams = (teams) ->
-  result = {}
-  for team, data of teams
-    result[team] =
-      tla: team
-      name: data.name
-      game_points: data.scores.game
-      league_points: data.scores.league
-      league_pos: data.league_pos
-  return result
-
 _calculateCurrentMatch = (matches) ->
   now = moment()
   active = (match) ->
@@ -88,7 +77,7 @@ class SRComp
     rq "#{@base}/teams", (error, response, body) =>
       return if error
       return unless response.statusCode is 200
-      newTeams = _formatTeams(JSON.parse(body)['teams'])
+      newTeams = JSON.parse(body)['teams']
       if not _.isEqual(@teams, newTeams)
         # Diffs 1: deleted teams
         for key of _.difference(_.keys(@teams), _.keys(newTeams))

@@ -29,6 +29,7 @@ class SRComp
       @config = JSON.parse(body)['config']
       console.log @config
       do @queryState
+      setInterval (=> do @sendPing), @config['ping_period'] * 1000
       setInterval (=> do @queryState), 10000
       setInterval (=> do @updateCurrentMatch), 2000
 
@@ -116,6 +117,11 @@ class SRComp
       @events.push
         event: 'match'
         data: @currentMatch
+
+  sendPing: ->
+    @events.push
+      event: 'ping'
+      data: {}
 
   reloadKnockouts: ->
     rq "#{@base}/knockout", (error, response, body) =>

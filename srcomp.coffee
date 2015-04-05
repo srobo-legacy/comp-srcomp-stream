@@ -9,6 +9,7 @@ class SRComp
     @events = new Bacon.Bus()
     @teams = {}
     @matches = []
+    @currentDelay = 0
     @currentMatch = []
     @lastScoredMatch = null
     @koRounds = null
@@ -23,7 +24,7 @@ class SRComp
       do @queryState
       setInterval (=> do @sendPing), @config['ping_period'] * 1000
       setInterval (=> do @queryState), 500
-      setInterval (=> do @updateCurrentMatch), 2000
+      setInterval (=> do @updateCurrent), 2000
 
   queryState: ->
     rq "#{@base}/state", (error, response, body) =>
@@ -45,11 +46,15 @@ class SRComp
     @seedTeamRecords().concat(@seedMatchRecord())
                       .concat(@seedScoredMatchRecord())
                       .concat(@seedKnockoutsRecord())
+                      .concat(@seedDelayRecord())
 
   seedTeamRecords: ->
     for team, record of @teams
       event: 'team'
       data: record
+
+  seedDelayRecord: ->
+    [{event: 'current-delay', data: @currentDelay}]
 
   seedMatchRecord: ->
     [{event: 'match', data: @currentMatch}]
@@ -89,7 +94,7 @@ class SRComp
       matches = JSON.parse(body)['matches']
       if not _.isEqual(@matches, matches)
         @matches = matches
-        do @updateCurrentMatch
+        do @updateCurrent
 
   reloadLastScoredMatch: ->
     rq "#{@base}/matches/last_scored", (error, response, body) =>
@@ -102,17 +107,23 @@ class SRComp
           event: 'last-scored-match'
           data: @lastScoredMatch
 
-  updateCurrentMatch: ->
+  updateCurrent: ->
     rq "#{@base}/current", (error, response, body) =>
       return if error
       return unless response.statusCode is 200
       currentInfo = JSON.parse(body)
-      newCurrent = currentInfo['matches']
-      if not _.isEqual(newCurrent, @currentMatch)
-        @currentMatch = newCurrent
+      newCurrentMatch = currentInfo['matches']
+      if not _.isEqual(newCurrentMatch, @currentMatch)
+        @currentMatch = newCurrentMatch
         @events.push
           event: 'match'
           data: @currentMatch
+      newCurrentDelay = currentInfo['delay']
+      if not _.isEqual(newCurrentDelay, @currentDelay)
+        @currentDelay = newCurrentDelay
+        @events.push
+          event: 'current-delay'
+          data: @currentDelay
 
   sendPing: ->
     @events.push

@@ -4,14 +4,6 @@ moment = require 'moment'
 Bacon = require 'baconjs'
 configuration = require './config'
 
-_calculateCurrentMatch = (matches) ->
-  now = moment()
-  active = (match) ->
-    start = moment(match.times.slot.start)
-    end = moment(match.times.slot.end)
-    start.isBefore(now) and end.isAfter(now)
-  match for match in matches when active(match)
-
 class SRComp
   constructor: (@base) ->
     @events = new Bacon.Bus()
@@ -111,12 +103,16 @@ class SRComp
           data: @lastScoredMatch
 
   updateCurrentMatch: ->
-    newCurrent = _calculateCurrentMatch(@matches)
-    if not _.isEqual(newCurrent, @currentMatch)
-      @currentMatch = newCurrent
-      @events.push
-        event: 'match'
-        data: @currentMatch
+    rq "#{@base}/current", (error, response, body) =>
+      return if error
+      return unless response.statusCode is 200
+      currentInfo = JSON.parse(body)
+      newCurrent = currentInfo['matches']
+      if not _.isEqual(newCurrent, @currentMatch)
+        @currentMatch = newCurrent
+        @events.push
+          event: 'match'
+          data: @currentMatch
 
   sendPing: ->
     @events.push

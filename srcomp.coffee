@@ -30,7 +30,7 @@ class SRComp
       console.log @config
       do @queryState
       setInterval (=> do @sendPing), @config['ping_period'] * 1000
-      setInterval (=> do @queryState), 10000
+      setInterval (=> do @queryState), 500
       setInterval (=> do @updateCurrentMatch), 2000
 
   queryState: ->

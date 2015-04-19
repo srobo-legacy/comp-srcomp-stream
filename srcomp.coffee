@@ -13,6 +13,7 @@ class SRComp
     @currentMatch = []
     @lastScoredMatch = null
     @koRounds = null
+    @tiebreaker = null
     do @queryConfig
 
   queryConfig: ->
@@ -41,12 +42,14 @@ class SRComp
     do @reloadMatches
     do @reloadLastScoredMatch
     do @reloadKnockouts
+    do @reloadTiebreaker
 
   seedRecords: ->
     @seedTeamRecords().concat(@seedMatchRecord())
                       .concat(@seedScoredMatchRecord())
                       .concat(@seedKnockoutsRecord())
                       .concat(@seedDelayRecord())
+                      .concat(@seedTiebreakerRecord())
 
   seedTeamRecords: ->
     for team, record of @teams
@@ -66,6 +69,10 @@ class SRComp
   seedKnockoutsRecord: ->
     return [] if not @koRounds?
     [{event: 'knockouts', data: @koRounds}]
+
+  seedTiebreakerRecord: ->
+    return [] if not @tiebreaker?
+    [{event: 'tiebreaker', data: @tiebreaker}]
 
   txTeamRecord: (tla, record) ->
     @events.push
@@ -140,6 +147,23 @@ class SRComp
         @events.push
           event: 'knockouts'
           data: @koRounds
+
+  reloadTiebreaker: ->
+    rq "#{@base}/tiebreaker", (error, response, body) =>
+      return if error
+
+      newTiebreaker = null
+      if response.statusCode is 200
+        newTiebreaker = JSON.parse(body)['tiebreaker']
+
+      console.log(@tiebreaker, newTiebreaker)
+
+      if not _.isEqual(@tiebreaker, newTiebreaker)
+        @tiebreaker = newTiebreaker
+        @events.push
+          event: 'tiebreaker'
+          data: @tiebreaker
+
 
 module.exports =
   SRComp: SRComp

@@ -148,7 +148,7 @@ class SRComp
   sendPing: ->
     @events.push
       event: 'ping'
-      data: {}
+      data: @config['ping_period'] * 1000
 
   reloadKnockouts: ->
     rq "#{@base}/knockout", (error, response, body) =>

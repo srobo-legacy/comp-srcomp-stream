@@ -12,6 +12,7 @@ class SRComp
     @currentDelay = 0
     @currentMatch = []
     @currentStagingMatches = []
+    @currentShepherdingMatches = []
     @lastScoredMatch = null
     @koRounds = null
     @tiebreaker = null
@@ -48,6 +49,7 @@ class SRComp
   seedRecords: ->
     @seedTeamRecords().concat(@seedMatchRecord())
                       .concat(@seedCurrentStagingMatchesRecord())
+                      .concat(@seedCurrentShepherdingMatchesRecord())
                       .concat(@seedScoredMatchRecord())
                       .concat(@seedKnockoutsRecord())
                       .concat(@seedDelayRecord())
@@ -66,6 +68,9 @@ class SRComp
 
   seedCurrentStagingMatchesRecord: ->
     [{event: 'current-staging-matches', data: @currentStagingMatches}]
+
+  seedCurrentShepherdingMatchesRecord: ->
+    [{event: 'current-shepherding-matches', data: @currentShepherdingMatches}]
 
   seedScoredMatchRecord: ->
     return [] if not @lastScoredMatch?
@@ -137,6 +142,13 @@ class SRComp
         @events.push
           event: 'current-staging-matches'
           data: @currentStagingMatches
+
+      newCurrentShepherdingMatches = currentInfo['shepherding_matches']
+      if not _.isEqual(newCurrentShepherdingMatches, @currentShepherdingMatches)
+        @currentShepherdingMatches = newCurrentShepherdingMatches
+        @events.push
+          event: 'current-shepherding-matches'
+          data: @currentShepherdingMatches
 
       newCurrentDelay = currentInfo['delay']
       if not _.isEqual(newCurrentDelay, @currentDelay)

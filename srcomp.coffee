@@ -33,13 +33,23 @@ class SRComp
     do @queryConfig
 
   queryConfig: ->
-    checkedRequest "#{@base}/config", (response, body) =>
-      @config = JSON.parse(body)['config']
-      console.log @config
-      do @queryState
-      setInterval (=> do @sendPing), @config['ping_period'] * 1000
-      setInterval (=> do @queryState), 500
-      setInterval (=> do @updateCurrent), 2000
+    configInterval = null
+
+    loadConfig = () =>
+      checkedRequest "#{@base}/config", (response, body) =>
+        # Avoid double configuration
+        return unless configInterval
+        clearInterval configInterval
+        configInterval = null
+
+        @config = JSON.parse(body)['config']
+        console.log @config
+        do @queryState
+        setInterval (=> do @sendPing), @config['ping_period'] * 1000
+        setInterval (=> do @queryState), 500
+        setInterval (=> do @updateCurrent), 2000
+
+    configInterval = setInterval (=> do loadConfig), 300
 
   queryState: ->
     checkedRequest "#{@base}/state", (response, body) =>

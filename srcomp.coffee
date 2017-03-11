@@ -8,7 +8,7 @@ configuration = require './config'
 checkedRequest = (url, cb) ->
   rq url, (error, response, body) =>
     if error
-      console.error error
+      console.error "Error making request to '#{url}': #{error}"
       return
 
     unless response.statusCode is 200

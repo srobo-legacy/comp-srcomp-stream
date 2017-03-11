@@ -4,6 +4,20 @@ moment = require 'moment'
 Bacon = require 'baconjs'
 configuration = require './config'
 
+
+checkedRequest = (url, cb) ->
+  rq url, (error, response, body) =>
+    if error
+      console.error error
+      return
+
+    unless response.statusCode is 200
+      console.error "Invalid status code from '#{url}': #{response.statusCode}"
+      return
+
+    return cb(error, response, body)
+
+
 class SRComp
   constructor: (@base) ->
     @events = new Bacon.Bus()
@@ -19,9 +33,7 @@ class SRComp
     do @queryConfig
 
   queryConfig: ->
-    rq "#{@base}/config", (error, response, body) =>
-      return if error
-      return unless response.statusCode is 200
+    checkedRequest "#{@base}/config", (error, response, body) =>
       @config = JSON.parse(body)['config']
       console.log @config
       do @queryState
@@ -30,9 +42,7 @@ class SRComp
       setInterval (=> do @updateCurrent), 2000
 
   queryState: ->
-    rq "#{@base}/state", (error, response, body) =>
-      return if error
-      return unless response.statusCode is 200
+    checkedRequest "#{@base}/state", (error, response, body) =>
       newState = JSON.parse(body)['state']
       if newState isnt @savedState
         @savedState = newState
@@ -90,9 +100,7 @@ class SRComp
       data: record
 
   reloadTeams: ->
-    rq "#{@base}/teams", (error, response, body) =>
-      return if error
-      return unless response.statusCode is 200
+    checkedRequest "#{@base}/teams", (error, response, body) =>
       newTeams = JSON.parse(body)['teams']
       if not _.isEqual(@teams, newTeams)
         # Diffs 1: deleted teams
@@ -105,18 +113,14 @@ class SRComp
         @teams = newTeams
 
   reloadMatches: ->
-    rq "#{@base}/matches", (error, response, body) =>
-      return if error
-      return unless response.statusCode is 200
+    checkedRequest "#{@base}/matches", (error, response, body) =>
       matches = JSON.parse(body)['matches']
       if not _.isEqual(@matches, matches)
         @matches = matches
         do @updateCurrent
 
   reloadLastScoredMatch: ->
-    rq "#{@base}/matches/last_scored", (error, response, body) =>
-      return if error
-      return unless response.statusCode is 200
+    checkedRequest "#{@base}/matches/last_scored", (error, response, body) =>
       lastScoredMatch = JSON.parse(body)['last_scored']
       if not _.isEqual(@lastScoredMatch, lastScoredMatch)
         @lastScoredMatch = lastScoredMatch
@@ -125,9 +129,7 @@ class SRComp
           data: @lastScoredMatch
 
   updateCurrent: ->
-    rq "#{@base}/current", (error, response, body) =>
-      return if error
-      return unless response.statusCode is 200
+    checkedRequest "#{@base}/current", (error, response, body) =>
       currentInfo = JSON.parse(body)
       newCurrentMatch = currentInfo['matches']
       if not _.isEqual(newCurrentMatch, @currentMatch)
@@ -163,9 +165,7 @@ class SRComp
       data: @config['ping_period'] * 1000
 
   reloadKnockouts: ->
-    rq "#{@base}/knockout", (error, response, body) =>
-      return if error
-      return unless response.statusCode is 200
+    checkedRequest "#{@base}/knockout", (error, response, body) =>
       newKORounds = JSON.parse(body)['rounds']
       if not _.isEqual(@koRounds, newKORounds)
         @koRounds = newKORounds
@@ -175,7 +175,9 @@ class SRComp
 
   reloadTiebreaker: ->
     rq "#{@base}/tiebreaker", (error, response, body) =>
-      return if error
+      if error
+        console.error error
+        return
 
       newTiebreaker = null
       if response.statusCode is 200

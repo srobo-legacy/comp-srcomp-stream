@@ -15,7 +15,7 @@ checkedRequest = (url, cb) ->
       console.error "Invalid status code from '#{url}': #{response.statusCode}"
       return
 
-    return cb(error, response, body)
+    return cb(response, body)
 
 
 class SRComp
@@ -33,7 +33,7 @@ class SRComp
     do @queryConfig
 
   queryConfig: ->
-    checkedRequest "#{@base}/config", (error, response, body) =>
+    checkedRequest "#{@base}/config", (response, body) =>
       @config = JSON.parse(body)['config']
       console.log @config
       do @queryState
@@ -42,7 +42,7 @@ class SRComp
       setInterval (=> do @updateCurrent), 2000
 
   queryState: ->
-    checkedRequest "#{@base}/state", (error, response, body) =>
+    checkedRequest "#{@base}/state", (response, body) =>
       newState = JSON.parse(body)['state']
       if newState isnt @savedState
         @savedState = newState
@@ -100,7 +100,7 @@ class SRComp
       data: record
 
   reloadTeams: ->
-    checkedRequest "#{@base}/teams", (error, response, body) =>
+    checkedRequest "#{@base}/teams", (response, body) =>
       newTeams = JSON.parse(body)['teams']
       if not _.isEqual(@teams, newTeams)
         # Diffs 1: deleted teams
@@ -113,14 +113,14 @@ class SRComp
         @teams = newTeams
 
   reloadMatches: ->
-    checkedRequest "#{@base}/matches", (error, response, body) =>
+    checkedRequest "#{@base}/matches", (response, body) =>
       matches = JSON.parse(body)['matches']
       if not _.isEqual(@matches, matches)
         @matches = matches
         do @updateCurrent
 
   reloadLastScoredMatch: ->
-    checkedRequest "#{@base}/matches/last_scored", (error, response, body) =>
+    checkedRequest "#{@base}/matches/last_scored", (response, body) =>
       lastScoredMatch = JSON.parse(body)['last_scored']
       if not _.isEqual(@lastScoredMatch, lastScoredMatch)
         @lastScoredMatch = lastScoredMatch
@@ -129,7 +129,7 @@ class SRComp
           data: @lastScoredMatch
 
   updateCurrent: ->
-    checkedRequest "#{@base}/current", (error, response, body) =>
+    checkedRequest "#{@base}/current", (response, body) =>
       currentInfo = JSON.parse(body)
       newCurrentMatch = currentInfo['matches']
       if not _.isEqual(newCurrentMatch, @currentMatch)
@@ -165,7 +165,7 @@ class SRComp
       data: @config['ping_period'] * 1000
 
   reloadKnockouts: ->
-    checkedRequest "#{@base}/knockout", (error, response, body) =>
+    checkedRequest "#{@base}/knockout", (response, body) =>
       newKORounds = JSON.parse(body)['rounds']
       if not _.isEqual(@koRounds, newKORounds)
         @koRounds = newKORounds

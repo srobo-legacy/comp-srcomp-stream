@@ -1,6 +1,10 @@
-# srcomp-stream
+# SRComp Stream
 
-This is a Node application that gives a live stream of events from srcomp.
+This is a Node application that gives a live stream of events from
+[SRComp][SRComp] by wrapping the [HTTP API][srcomp-http].
+
+[srcomp]: https://github.com/PeterJCLaw/srcomp
+[srcomp-http]: https://github.com/PeterJCLaw/srcomp-http
 
 ## Configuration
 
